@@ -1,6 +1,6 @@
 bash -c "$(cat <<'INSTALLER_EOF'
 #!/bin/bash
-# Ark of Grace Ministries - Library Installer v23.7
+# Library Installer v23.7
 # Personalized for Deven Cutting - Blue/Cyan Edition
 
 set -e
