@@ -1,8 +1,7 @@
-bash -c "$(cat <<'INSTALLER_EOF'
-#!/bin/bash
 # Library Installer v23.7
 # Personalized for Deven Cutting - Blue/Cyan Edition
-
+bash -c "$(cat <<'INSTALLER_EOF'
+#!/bin/bash
 set -e
 shopt -s nullglob
 GOLD="\033[0;33m"; GREEN="\033[0;32m"; CYAN="\033[0;36m"
