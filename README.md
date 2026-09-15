@@ -1,5 +1,5 @@
 # DEVEN-CUTTING-S-MEDIA-LIBRARY---INSTALLER-v23.7_Full_install_Ubuntu_24.04
-DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v23.8 --- DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v23.7_Full_install_Ubuntu_24.04
+DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v23.8 --- DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v23.8_Full_install_Ubuntu_24.04
 
 <div align="center">
 
@@ -7,7 +7,7 @@ DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v23.8 --- DEVEN CUTTING'S MEDIA LIBRAR
 
 ### A Self-Hosted Personal Media Library Server
 
-**Version 23.7** | Blue/Cyan Edition | MIT Licensed
+**Version 23.8** | Blue/Cyan Edition | MIT Licensed
 
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
