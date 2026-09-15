@@ -1,6 +1,6 @@
 bash -c "$(cat <<'INSTALLER_EOF'
 #!/bin/bash
-# Ark of Grace Ministries - Library Installer v25.0
+# Library Installer v25.1
 # Deven Cutting Edition - YouTube-Style + ffmpeg Auto-Install
 
 set -e
