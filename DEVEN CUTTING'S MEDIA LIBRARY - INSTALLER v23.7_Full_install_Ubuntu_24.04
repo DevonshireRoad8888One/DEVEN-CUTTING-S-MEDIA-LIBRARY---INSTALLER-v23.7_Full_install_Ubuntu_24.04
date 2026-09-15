@@ -1,17 +1,17 @@
 bash -c "$(cat <<'INSTALLER_EOF'
 #!/bin/bash
-# Library Installer v25.1
-# Deven Cutting Edition - YouTube-Style + ffmpeg Auto-Install
+# Library Installer v25.0
+# Deven Cutting Edition - YOUTUBE-STYLE THUMBNAILS!
 
 set -e
 shopt -s nullglob
-GOLD="\033[0;33m"; GREEN="\033[0;32m"; CYAN="\033[0;36m"
+GOLD="\033[0;33m"; GREEN="\033[0;32m"; CYAN="\033[0[36m"
 RED="\033[0;31m"; YELLOW="\033[1[33m"; BLUE="\033[0;34m"; NC="\033[0m"
 clear
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}     DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v25.1${NC}"
+echo -e "${CYAN}     DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v25.0${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}        YouTube-Style + Auto Thumbnails${NC}"
+echo -e "${CYAN}        YouTube-Style Thumbnails Edition${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 
@@ -64,30 +64,22 @@ if [ -d "$INSTALL_DIR" ]; then
     fi
 fi
 
-# Update system
-echo -e "${CYAN}Updating system...${NC}"
-sudo apt update -qq && sudo apt upgrade -y -qq
-echo -e "${GREEN}Done${NC}"
-echo ""
-
-# Install Python + ffmpeg + everything needed
-echo -e "${CYAN}Installing Python, ffmpeg, and dependencies...${NC}"
-sudo apt install -y -qq python3 python3-pip 2>&1 | grep -E "Error|error" || true
-sudo apt install -y -qq ffmpeg 2>&1 | grep -E "Error|error" || true
-echo -e "${GREEN}Python $(python3 --version 2>&1 | cut -d' ' -f2)${NC}"
-if command -v ffmpeg &> /dev/null; then
-    echo -e "${GREEN}ffmpeg $(ffmpeg -version 2>&1 | head -1 | cut -d' ' -f3)${NC}"
-else
-    echo -e "${RED}ffmpeg failed to install!${NC}"
-fi
-echo ""
-
 # Ensure folders exist
 for folder in videos images audio music trash thumbnails; do
     [ -d "$INSTALL_DIR/$folder" ] || mkdir -p "$INSTALL_DIR/$folder"
 done
 
-# Manifest generator (WITH THUMBNAILS!)
+# Generate thumbnails for videos (uses ffmpeg if available)
+echo -e "${CYAN}Checking for ffmpeg (for thumbnails)...${NC}"
+if command -v ffmpeg &> /dev/null; then
+    echo -e "${GREEN}ffmpeg found! Will generate video thumbnails${NC}"
+    HAS_FFMPEG=true
+else
+    echo -e "${YELLOW}ffmpeg not found - will use placeholder thumbnails${NC}"
+    HAS_FFMPEG=false
+fi
+
+# Manifest generator (NOW GENERATES THUMBNAILS!)
 cat > "$INSTALL_DIR/generate-manifest.py" << 'PYEOF'
 #!/usr/bin/env python3
 import os, json, subprocess, hashlib
@@ -103,16 +95,16 @@ def scan_folder(folder, extensions):
 def make_thumbnail(video_file, thumb_dir):
     """Generate thumbnail for a video file"""
     base_name = os.path.splitext(video_file)[0]
-    # Create safe filename
-    safe_name = hashlib.md5(video_file.encode()).hexdigest()[:10] + '_' + base_name[:30]
+    safe_name = hashlib.md5(video_file.encode()).hexdigest()[:10] + '_' + base_name
     safe_name = ''.join(c for c in safe_name if c.isalnum() or c in '-_')
     thumb_path = os.path.join(thumb_dir, safe_name + '.jpg')
    
     if os.path.exists(thumb_path):
         return safe_name + '.jpg'  # Already exists
    
-    # Try ffmpeg at 5 seconds
+    # Try ffmpeg first
     try:
+        # Get thumbnail at 5 seconds (or 10% into video)
         subprocess.run([
             'ffmpeg', '-i', os.path.join('videos', video_file),
             '-ss', '00:00:05', '-vframes', '1',
@@ -121,7 +113,7 @@ def make_thumbnail(video_file, thumb_dir):
         ], check=True, capture_output=True, timeout=30)
         return safe_name + '.jpg'
     except:
-        # Fallback: first frame
+        # Fallback: try first frame
         try:
             subprocess.run([
                 'ffmpeg', '-i', os.path.join('videos', video_file),
@@ -146,9 +138,13 @@ os.makedirs(thumb_dir, exist_ok=True)
 thumbnails = {}
 for video in videos:
     thumb = make_thumbnail(video, thumb_dir)
-    thumbnails[video] = thumb
+    if thumb:
+        thumbnails[video] = thumb
+        print(f"  Thumbnail: {video[:40]}...")
+    else:
+        thumbnails[video] = None
 
-# Save manifest
+# Save manifest with thumbnails
 manifest = {
     "videos": videos,
     "images": images,
@@ -168,12 +164,12 @@ echo "$INSTALL_DIR" > ~/.ark_install_dir
 [ "$IS_WSL" = true ] && echo "true" > ~/.ark_is_wsl || echo "false" > ~/.ark_is_wsl
 mkdir -p ~/.local/bin
 
-# ark command
+# ark command (starts server with delete capability)
 cat > ~/.local/bin/ark <<'ARK_EOF'
 #!/bin/bash
 ARK_DIR="$(cat ~/.ark_install_dir 2>/dev/null)"
 IS_WSL="$(cat ~/.ark_is_wsl 2>/dev/null)"
-C_RED='\033[0;31m'; C_GRN='\033[0;32m'; C_CYN='\033[0[36m'; C_YEL='\033[1[33m'; NC='\033[0m'
+C_RED='\033[0;31m'; C_GRN='\033[0;32m'; C_CYN='\033[0;36m'; C_YEL='\033[1[33m'; NC='\033[0m'
 if [ ! -d "$ARK_DIR" ]; then
     echo -e "${C_RED}ark-library not found at: $ARK_DIR${NC}"; exit 1; fi
 pkill -f "http.server 9000" 2>/dev/null; sleep 2
@@ -188,7 +184,7 @@ else
     pgrep -f "delete-handler.py" >/dev/null && UP=1 || UP=0
 fi
 if [ "$UP" = "1" ]; then
-    echo -e "${C_GRN}Server started!${NC}"
+    echo -e "${C_GRN}Server started! (YouTube-style)${NC}"
     echo -e "${C_CYN}http://localhost:9000${NC}"
     echo -e "${C_YEL}Press Ctrl+Shift+R!${NC}"
     [ "$IS_WSL" = "true" ] && powershell.exe -Command "Start-Process 'http://localhost:9000'" 2>/dev/null || xdg-open "http://localhost:9000" 2>/dev/null
@@ -197,7 +193,7 @@ else
 ARK_EOF
 chmod +x ~/.local/bin/ark
 
-# ark-add
+# ark-add command
 cat > ~/.local/bin/ark-add <<'ARK_ADD_EOF'
 #!/bin/bash
 ARK_DIR="$(cat ~/.ark_install_dir 2>/dev/null)"
@@ -267,6 +263,8 @@ nav a:hover { color: #00d4ff; }
 section { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
 .section-title { font-size: 2rem; color: #00d4ff; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(0, 212, 255, 0.3); font-weight: 300; }
 .video-grid, .audio-grid, .music-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; }
+
+/* THUMBNAIL STYLE - Like YouTube! */
 .video-thumb {
   background: rgba(10, 25, 41, 0.7);
   border: 1px solid rgba(0, 212, 255, 0.2);
@@ -311,6 +309,7 @@ section { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
 .video-thumb:hover .play-icon { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
 .thumb-info { padding: 12px 15px; }
 .thumb-info h3 { color: #fff; font-size: 0.9rem; font-weight: 400; line-height: 1.3; }
+
 .audio-card, .music-card {
   background: rgba(10, 25, 41, 0.7);
   border: 1px solid rgba(0, 212, 255, 0.2);
@@ -325,16 +324,20 @@ section { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
 .audio-card audio, .music-card audio { width: 100%; margin-top: 10px; }
 .music-card { background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(0, 212, 255, 0.05)); }
 .music-info h3 { color: #ffd700; }
+
 .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
 .gallery-item { position: relative; overflow: hidden; border-radius: 12px; border: 2px solid rgba(0, 212, 255, 0.2); cursor: pointer; transition: transform 0.3s, border-color 0.3s; }
 .gallery-item:hover { border-color: #00d4ff; transform: translateY(-3px); }
 .gallery-item img { width: 100%; height: 280px; object-fit: cover; display: block; }
 .gallery-caption { padding: 12px; text-align: center; background: rgba(10, 25, 41, 0.9); color: #e8f0f7; font-size: 0.85rem; }
+
 .delete-btn { position: absolute; top: 8px; right: 8px; background: rgba(220, 38, 38, 0.85); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold; }
 .delete-btn:hover { background: rgba(239, 68, 68, 1); }
 .delete-btn-large { position: absolute; top: 8px; right: 8px; background: rgba(220, 38, 38, 0.85); color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 0.8rem; cursor: pointer; z-index: 10; font-weight: 500; }
 .delete-btn-large:hover { background: rgba(239, 68, 68, 1); }
 .status-msg { text-align: center; padding: 40px; grid-column: 1/-1; color: #b0c4de; }
+
+/* VIDEO PLAYER LIGHTBOX */
 .player-modal { display: none; position: fixed; z-index: 10000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); justify-content: center; align-items: center; flex-direction: column; }
 .player-modal.active { display: flex; }
 .player-container { max-width: 90vw; max-height: 85vh; width: 1200px; }
@@ -342,6 +345,7 @@ section { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
 .player-caption { color: #00d4ff; margin-top: 15px; font-size: 1.1rem; text-align: center; padding: 0 20px; }
 .player-close { position: absolute; top: 20px; right: 30px; color: #00d4ff; font-size: 2.5rem; cursor: pointer; font-weight: bold; }
 .player-close:hover { color: #fff; }
+
 .modal { display: none; position: fixed; z-index: 10000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center; }
 .modal.active { display: flex; }
 .modal-content { background: rgba(10, 25, 41, 0.95); border: 2px solid #00d4ff; border-radius: 12px; padding: 30px; max-width: 400px; text-align: center; }
@@ -351,10 +355,12 @@ section { max-width: 1300px; margin: 40px auto; padding: 0 20px; }
 .modal-btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.95rem; }
 .modal-btn-confirm { background: #dc2626; color: white; }
 .modal-btn-cancel { background: #4b5563; color: white; }
+
 footer { text-align: center; padding: 40px 20px; border-top: 2px solid #00d4ff; margin-top: 80px; background: rgba(10, 25, 41, 0.6); }
 footer h3 { color: #00d4ff; margin-bottom: 10px; font-weight: 400; }
 footer .license { color: #ffd700; font-size: 0.9rem; margin-top: 15px; }
 footer .author { color: #b0c4de; font-size: 1rem; margin-top: 8px; }
+
 .lightbox { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); justify-content: center; align-items: center; flex-direction: column; }
 .lightbox.active { display: flex; }
 .lightbox img { max-width: 95%; max-height: 85vh; object-fit: contain; border: 3px solid #00d4ff; border-radius: 8px; }
@@ -411,6 +417,7 @@ footer .author { color: #b0c4de; font-size: 1rem; margin-top: 8px; }
 <p style="margin-top: 15px; opacity: 0.7; font-size: 0.85rem;">Copyright © 2026 Deven Cutting. All rights reserved.</p>
 </footer>
 
+<!-- Video Player Modal (YouTube-style) -->
 <div class="player-modal" id="playerModal">
 <span class="player-close" onclick="closePlayer()">&times;</span>
 <div class="player-container">
@@ -419,6 +426,7 @@ footer .author { color: #b0c4de; font-size: 1rem; margin-top: 8px; }
 </div>
 </div>
 
+<!-- Delete Modal -->
 <div class="modal" id="deleteModal">
 <div class="modal-content">
 <h3>Delete File?</h3>
@@ -430,6 +438,7 @@ footer .author { color: #b0c4de; font-size: 1rem; margin-top: 8px; }
 </div>
 </div>
 
+<!-- Image Lightbox -->
 <div class="lightbox" id="lightbox">
 <span class="lightbox-close" id="lightbox-close">&times;</span>
 <img id="lightbox-img" src="" alt="">
@@ -448,20 +457,31 @@ function escAttr(s) {
   return s.replace(/'/g, "\\'").replace(/"/g, "&quot;");
 }
 
+// YOUTUBE-STYLE THUMBNAIL - Just a picture, no video player!
 function createVideoThumb(f, thumbName) {
   var name = cleanName(f);
   var thumbSrc = thumbName ? 'thumbnails/' + encodeURIComponent(thumbName) : '';
   var fallbackSvg = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><rect width="640" height="360" fill="#1e3a5f"/><text x="320" y="180" text-anchor="middle" fill="#00d4ff" font-size="24" font-family="sans-serif">No Thumbnail</text></svg>');
-  return '<div class="video-thumb" onclick="playVideo(\'videos/' + encodeURIComponent(f) + '\', \'' + escAttr(name) + '\')"><button class="delete-btn" onclick="confirmDelete(\'videos\', \'' + escAttr(f) + '\', event)" title="Delete">×</button><div class="thumb-image"><img src="' + thumbSrc + '" alt="' + escAttr(name) + '" onerror="this.src=\'' + fallbackSvg + '\'" loading="lazy"><div class="play-icon">▶</div></div><div class="thumb-info"><h3>' + name + '</h3></div></div>';
+  return '<div class="video-thumb" onclick="playVideo(\'videos/' + encodeURIComponent(f) + '\', \'' + escAttr(name) + '\')" title="' + escAttr(name) + '">' +
+    '<button class="delete-btn" onclick="confirmDelete(\'videos\', \'' + escAttr(f) + '\', event)" title="Delete">×</button>' +
+    '<div class="thumb-image">' +
+    '<img src="' + thumbSrc + '" alt="' + escAttr(name) + '" onerror="this.src=\'' + fallbackSvg + '\'" loading="lazy">' +
+    '<div class="play-icon">▶</div>' +
+    '</div>' +
+    '<div class="thumb-info"><h3>' + name + '</h3></div>' +
+    '</div>';
 }
 
 function playVideo(src, caption) {
   var modal = document.getElementById('playerModal');
   var video = document.getElementById('playerVideo');
   var cap = document.getElementById('playerCaption');
+ 
+  // Stop any currently playing video
   if (currentPlayer && currentPlayer !== video) {
     currentPlayer.pause();
   }
+ 
   video.src = src;
   cap.textContent = caption;
   modal.classList.add('active');
@@ -479,7 +499,10 @@ function closePlayer() {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closePlayer(); closeDeleteModal(); }
+  if (e.key === 'Escape') {
+    closePlayer();
+    closeDeleteModal();
+  }
 });
 
 function createImageCard(f) {
@@ -513,10 +536,18 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
   if (!deleteTarget) return;
   var folder = deleteTarget.folder;
   var filename = deleteTarget.filename;
+ 
   fetch('/delete?folder=' + encodeURIComponent(folder) + '&file=' + encodeURIComponent(filename))
     .then(r => r.json())
-    .then(data => { if (data.success) location.reload(); else alert('Failed'); })
-    .catch(e => alert('Error'));
+    .then(data => {
+      if (data.success) {
+        location.reload();
+      } else {
+        alert('Delete failed');
+      }
+    })
+    .catch(e => alert('Error: ' + e.message));
+ 
   closeDeleteModal();
 });
 
@@ -536,21 +567,24 @@ document.getElementById('lightbox-close').addEventListener('click', closeLightbo
 async function init() {
   try {
     var r = await fetch('manifest.json?v=' + Date.now());
-    if (!r.ok) throw new Error('manifest not found');
+    if (!r.ok) throw new Error('manifest.json not found');
     var d = await r.json();
     var v = d.videos || [];
     var i = d.images || [];
     var a = d.audio || [];
     var m = d.music || [];
     var thumbs = d.thumbnails || {};
+   
     document.getElementById('videoGrid').innerHTML = v.length ? v.map(function(f) { return createVideoThumb(f, thumbs[f]); }).join('') : '<div class="status-msg">No videos yet</div>';
     document.getElementById('imageGrid').innerHTML = i.length ? i.map(createImageCard).join('') : '<div class="status-msg">No images yet</div>';
     document.getElementById('audioGrid').innerHTML = a.length ? a.map(createAudioCard).join('') : '<div class="status-msg">No audio yet</div>';
     document.getElementById('musicGrid').innerHTML = m.length ? m.map(createMusicCard).join('') : '<div class="status-msg">No music yet</div>';
+   
     document.getElementById('videoCount').textContent = v.length;
     document.getElementById('imageCount').textContent = i.length;
     document.getElementById('audioCount').textContent = a.length;
     document.getElementById('musicCount').textContent = m.length;
+   
     var items = document.querySelectorAll('.gallery-item');
     for (var k = 0; k < items.length; k++) {
       items[k].addEventListener('click', function(e) {
@@ -569,81 +603,22 @@ init();
 </html>
 HTMLEOF
 
-# Create delete-handler.py
-cat > "$INSTALL_DIR/delete-handler.py" << 'PYEOF'
-#!/usr/bin/env python3
-import http.server, socketserver, os, json, urllib.parse, time
-
-PORT = 9000
-DIRECTORY = "/mnt/c/Users/tooex/Downloads/ark-library"
-
-class DeleteHandler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=DIRECTORY, **kwargs)
-   
-    def do_GET(self):
-        parsed = urllib.parse.urlparse(self.path)
-        params = urllib.parse.parse_qs(parsed.query)
-        if parsed.path == '/delete':
-            folder = params.get('folder', [''])[0]
-            filename = params.get('file', [''])[0]
-            if folder not in ['videos', 'images', 'audio', 'music']:
-                self.send_error(400, "Invalid folder")
-                return
-            if '..' in filename or '/' in filename or '\\' in filename:
-                self.send_error(400, "Invalid filename")
-                return
-            filepath = os.path.join(DIRECTORY, folder, filename)
-            if not os.path.exists(filepath):
-                self.send_response(404)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({"success": False, "error": "Not found"}).encode())
-                return
-            try:
-                trash_dir = os.path.join(DIRECTORY, 'trash')
-                os.makedirs(trash_dir, exist_ok=True)
-                timestamp = str(int(time.time()))
-                trash_filename = timestamp + '_' + filename
-                trash_path = os.path.join(trash_dir, trash_filename)
-                os.rename(filepath, trash_path)
-                os.system(f'cd "{DIRECTORY}" && python3 generate-manifest.py > /dev/null 2>&1')
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({"success": True}).encode())
-            except Exception as e:
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps({"success": False, "error": str(e)}).encode())
-            return
-        return super().do_GET()
-   
-    def log_message(self, format, *args):
-        pass
-
-if __name__ == "__main__":
-    os.chdir(DIRECTORY)
-    with socketserver.TCPServer(("", PORT), DeleteHandler) as httpd:
-        print(f"Server: {DIRECTORY}")
-        print(f"http://localhost:{PORT}")
-        httpd.serve_forever()
-PYEOF
-
 # Generate initial manifest + thumbnails
 cd "$INSTALL_DIR"
 python3 generate-manifest.py
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}INSTALLATION COMPLETE! v25.0${NC}"
+echo -e "${CYAN}INSTALLATION COMPLETE! v25.0 - YouTube-Style!${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${CYAN}Installed: Python, ffmpeg, all dependencies${NC}"
-echo -e "${CYAN}Features: YouTube thumbnails, delete buttons, music, images${NC}"
+echo -e "${CYAN}NEW: Click thumbnail to play in lightbox!${NC}"
+echo -e "${CYAN}No more browser crashes with hundreds of videos!${NC}"
 echo ""
 echo -e "${CYAN}Commands: ark, ark-add, ark-stop, ark-trash${NC}"
 echo -e "${CYAN}URL: ${YELLOW}http://localhost:9000${NC}"
+echo ""
+echo -e "${CYAN}Tip: Install ffmpeg for automatic video thumbnails:${NC}"
+echo -e "${YELLOW}sudo apt install ffmpeg${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 INSTALLER_EOF
 )"
