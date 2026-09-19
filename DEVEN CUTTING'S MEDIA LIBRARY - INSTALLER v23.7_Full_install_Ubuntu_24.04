@@ -1,6 +1,6 @@
 bash -c "$(cat <<'INSTALLER_EOF'
 #!/bin/bash
-# Library Installer v25.0
+# Library Installer v23.7
 # Deven Cutting Edition - YOUTUBE-STYLE THUMBNAILS!
 
 set -e
@@ -9,7 +9,7 @@ GOLD="\033[0;33m"; GREEN="\033[0;32m"; CYAN="\033[0[36m"
 RED="\033[0;31m"; YELLOW="\033[1[33m"; BLUE="\033[0;34m"; NC="\033[0m"
 clear
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}     DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v25.0${NC}"
+echo -e "${CYAN}     DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v23.7${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo -e "${CYAN}        YouTube-Style Thumbnails Edition${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
