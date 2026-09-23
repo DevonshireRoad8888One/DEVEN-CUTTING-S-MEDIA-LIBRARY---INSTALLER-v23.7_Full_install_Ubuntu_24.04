@@ -1,6 +1,6 @@
 bash -c "$(cat <<'INSTALLER_EOF'
 #!/bin/bash
-# Ark of Grace Ministries - Library Installer v38.0
+# Library Installer v38.0
 # Deven Cutting Edition - CLEAN OUTPUT VERSION
 # No ANSI color codes - works perfectly everywhere!
 
