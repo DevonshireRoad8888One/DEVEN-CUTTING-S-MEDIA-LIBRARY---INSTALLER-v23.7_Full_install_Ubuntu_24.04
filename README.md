@@ -1,3 +1,756 @@
+
+<div align="center">
+
+# 💙 Deven Cutting's Media Library
+
+### A Self-Hosted Personal Media Library Server
+
+**Version 38.0** | Clean Output Edition | MIT Licensed
+
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04%20LTS-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![WSL](https://img.shields.io/badge/WSL-Compatible-0078D4?style=for-the-badge&logo=windows-terminal&logoColor=white)](https://docs.microsoft.com/en-us/windows/wsl/)
+[![Version](https://img.shields.io/badge/Version-38.0-00d4ff?style=for-the-badge)](https://github.com/devcuting/ark-library/releases)
+
+[Features](#-features) • [Quick Start](#-quick-start) • [Installation](#-installation) • [Usage](#-usage) • [Architecture](#-architecture)
+
+</div>
+
+---
+
+## 📖 About
+
+**Deven Cutting's Media Library** is a self-hosted, beautiful personal media server that organizes and streams videos, images, audio messages, and music. Built with a modern **blue/cyan** theme, this system transforms any folder of media into a stunning, browsable web library.
+
+Created by **Deven Cutting** for organizing personal media collections, creative works, and media libraries.
+
+**No cloud. No subscriptions. No tracking.** Just your media, on your machine, with full control.
+
+---
+
+## ✨ Features
+
+### 🎬 **Media Support**
+- **Videos** - MP4, MOV, WebM, AVI, MKV with HTML5 player
+- **Images** - PNG, JPG, JPEG, GIF, WebP with click-to-zoom lightbox
+- **Audio Messages** - MP3, WAV, OGG, M4A, FLAC
+- **Music Library** - Dedicated music section with special styling
+- **Unlimited files** - No 50-file limit, handles thousands
+
+### 🖼️ **YouTube-Style Thumbnails** (v25.0+)
+- **Auto-generated** video thumbnails using FFmpeg
+- **Lazy loading** - only loads when visible
+- **Memory efficient** - thumbnails instead of video players
+- **Click to play** - opens in lightbox
+
+### 🗑️ **Delete with Safety** (v24.4+)
+- Delete buttons on **every item**
+- Confirmation modal prevents accidents
+- Files moved to **trash/** folder (recoverable!)
+- Auto-regenerates manifest after deletion
+- Path traversal protection (security)
+
+### 🎨 **Beautiful Design**
+- **Blue/cyan theme** personalized for Deven
+- Dark mode with cyan accents
+- Gold highlights for music section
+- Red delete buttons for visual safety
+- Responsive grid layout
+- Smooth animations
+
+### 🛠️ **Technical Highlights**
+- **Pure Python 3.12** - no external runtime dependencies
+- **FFmpeg** for thumbnail generation (auto-installed)
+- Works on **Ubuntu 24.04 LTS** and **WSL**
+- Smart Windows user detection
+- Preserves existing files during install
+- Cross-platform compatible
+- **MIT License** - free and open source
+
+### 🔒 **Security Built-In**
+- Automatic system updates
+- Firewall-friendly (localhost only)
+- Private network (not internet-exposed)
+- Delete button protection
+- Path traversal prevention
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Ubuntu 24.04 LTS** (native or WSL on Windows 10/11)
+- **Python 3.12+** (installed automatically)
+- **FFmpeg** (installed automatically)
+- ~100MB free disk space (plus your media)
+
+### Installation (3-5 minutes)
+
+**Step 1:** Open Ubuntu terminal
+
+**Step 2:** Copy and paste this entire installer:
+
+```bash
+bash -c "$(cat <<'INSTALLER_EOF'
+#!/bin/bash
+# Ark of Grace Ministries - Library Installer v38.0
+set -e
+shopt -s nullglob
+clear
+echo "================================================================"
+echo ""
+echo "       DEVEN CUTTING'S MEDIA LIBRARY - INSTALLER v38.0"
+echo ""
+echo "================================================================"
+echo ""
+
+if [ "$EUID" -eq 0 ]; then
+    echo "[ERROR] Please don't run as root!"
+    exit 1
+fi
+
+if grep -qi microsoft /proc/version 2>/dev/null; then
+    IS_WSL=true
+    echo "[INFO] WSL detected"
+else
+    IS_WSL=false
+    echo "[INFO] Native Linux detected"
+fi
+echo ""
+
+if [ "$IS_WSL" = true ]; then
+    echo "[STEP] Finding Windows users..."
+    echo ""
+    USER_LIST=()
+    for user_dir in /mnt/c/Users/*/; do
+        user=$(basename "$user_dir")
+        if [[ "$user" != "Public" && "$user" != "Default" && "$user" != "Default User" && "$user" != "All Users" ]]; then
+            USER_LIST+=("$user")
+            echo "   [$(( ${#USER_LIST[@]} ))] $user"
+        fi
+    done
+    echo "   [0] Cancel"
+    echo ""
+    read -p "Enter number: " USER_CHOICE
+    [ "$USER_CHOICE" = "0" ] && exit 0
+    if ! [[ "$USER_CHOICE" =~ ^[0-9]+$ ]] || [ "$USER_CHOICE" -lt 1 ] || [ "$USER_CHOICE" -gt "${#USER_LIST[@]}" ]; then
+        echo "[ERROR] Invalid choice!"
+        exit 1
+    fi
+    WIN_USER="${USER_LIST[$((USER_CHOICE-1))]}"
+    INSTALL_DIR="/mnt/c/Users/$WIN_USER/Downloads/ark-library"
+    echo ""
+    echo "[OK] Selected: $WIN_USER"
+else
+    INSTALL_DIR="$HOME/ark-library"
+    echo "[INFO] Installing to: $INSTALL_DIR"
+fi
+echo ""
+
+echo "[STEP] Updating system..."
+sudo apt update -qq && sudo apt upgrade -y -qq
+echo "[OK] Updated"
+
+echo "[STEP] Installing Python and ffmpeg..."
+sudo apt install -y -qq python3 python3-pip ffmpeg 2>&1 | grep -E "Error|error" || true
+echo "[OK] Installed"
+
+for folder in videos images audio music trash thumbnails; do
+    [ -d "$INSTALL_DIR/$folder" ] || mkdir -p "$INSTALL_DIR/$folder"
+done
+
+# Note: Full installer is in install.sh - see repo
+echo ""
+echo "For full installation, run: bash install.sh"
+INSTALLER_EOF
+)"
+
+
+Step 3: Follow the prompts (pick your Windows user if using WSL)
+
+Step 4: Wait for "INSTALLATION COMPLETE!"
+
+Step 5: Type ark and your browser opens automatically!
+
+📦 What Gets Installed
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+~/ark-library/                      # Main library folder
+├── index.html                      # Web interface (blue/cyan theme)
+├── manifest.json                   # Auto-generated file list
+├── generate-manifest.py            # File scanner
+├── delete-handler.py               # Delete button backend
+├── videos/                         # Your video files
+├── images/                         # Your image files
+├── audio/                          # Your audio messages
+├── music/                          # Your music files
+├── trash/                          # Recoverable deleted files
+└── thumbnails/                     # Auto-generated video thumbnails
+
+~/.local/bin/
+├── ark         # Start library command
+├── ark-add     # Update file list
+├── ark-stop    # Stop server
+└── ark-trash   # View deleted files
+💻 Usage
+Daily Commands
+COMMAND
+WHAT IT DOES
+ark
+Start library, refresh index, open browser
+ark-add
+Update file list (generates new thumbnails)
+ark-stop
+Stop the running server
+ark-trash
+Show files in trash folder
+Ctrl+C
+Emergency stop (in terminal)
+
+
+The 4 Media Folders
+FOLDER
+PURPOSE
+FILE TYPES
+videos/
+Video files
+.mp4, .mov, .webm, .avi, .mkv
+images/
+Image files
+.png, .jpg, .jpeg, .gif, .webp
+audio/
+Audio messages
+.mp3, .wav, .ogg, .m4a
+music/
+Music files
+.mp3, .wav, .ogg, .m4a
+
+
+Adding New Media
+Method 1: File Manager
+
+Open file manager
+Navigate to ~/ark-library/videos/ (or other folder)
+Copy/paste your files
+Run: ark-add (generates thumbnails)
+Hard refresh browser: Ctrl+Shift+R
+Method 2: Terminal
+
+bash
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+5
+6
+7
+8
+# Copy a video
+cp ~/Downloads/new-video.mp4 ~/ark-library/videos/
+
+# Update library (generates thumbnail)
+ark-add
+
+# Or just run ark - it auto-refreshes!
+ark
+Deleting Files
+Click the 🗑️ button on any item
+Confirmation appears: "Move 'file.mp3' to trash?"
+Click "Delete" → File moves to trash/
+Item disappears from view
+Stats update automatically
+Restoring from trash:
+
+bash
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+5
+# View what's in trash
+ark-trash
+
+# Restore a file
+mv ~/ark-library/trash/1234567890_song.mp3 ~/ark-library/music/
+Accessing From Other Devices
+Your library is accessible from any device on your local network:
+
+bash
+
+Collapse
+Save
+Copy
+1
+2
+3
+# Find your IP
+hostname -I
+# Example: 192.168.1.100
+On another device (same WiFi), open:
+
+
+Collapse
+Save
+Copy
+1
+http://192.168.1.100:9000
+🏗️ Architecture
+How It Works
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+┌─────────────────────────────────────────┐
+│  Your Media Files                       │
+│  (videos, images, audio, music)         │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│  generate-manifest.py                   │
+│  • Scans folders                        │
+│  • FFmpeg generates thumbnails          │
+│  • Creates manifest.json                │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│  delete-handler.py (Python Server)      │
+│  • Serves files on port 9000            │
+│  • Handles /delete requests             │
+│  • Moves files to trash/                │
+└──────────────┬──────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────┐
+│  Your Browser                           │
+│  http://localhost:9000                  │
+│  • Click thumbnails to play videos      │
+│  • Click images for fullscreen          │
+│  • Play multiple files                  │
+│  • Beautiful blue/cyan theme            │
+└─────────────────────────────────────────┘
+Why Thumbnails?
+Instead of loading 100+ actual video players (which crashes browsers), this system:
+
+Shows a single thumbnail image per video
+Loads the actual video only when you click play
+Uses 10x less memory
+Works with thousands of videos
+🎨 Customization
+Change The Theme
+Edit ~/ark-library/index.html and modify the CSS:
+
+css
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+5
+6
+7
+8
+9
+⌄
+⌄
+/* Main background gradient (blue/cyan) */
+body {
+  background: linear-gradient(135deg, #0a1929, #1e3a5f, #2c5282);
+}
+
+/* Accent color (cyan) */
+:root {
+  --accent: #00d4ff;  /* Try #ff6b6b (red) or #4ecdc4 (teal) */
+}
+Change The Header
+html
+
+Collapse
+Save
+Copy
+
+Preview
+1
+2
+3
+4
+<h1>Deven Cutting's Media Library</h1>
+<div class="subtitle">Personal Collection</div>
+<div class="name">— Deven Cutting —</div>
+<div class="tagline">Curating Knowledge, Media & Creative Works</div>
+Change The Port
+Edit delete-handler.py:
+
+python
+
+Collapse
+
+Run
+Save
+Copy
+1
+PORT = 9000  # Change to 8080, 8888, etc.
+Then update ~/.local/bin/ark to match.
+
+🐛 Troubleshooting
+"Command 'ark' not found"
+Close your terminal and open a new one. The PATH update needs a fresh session.
+
+"Address already in use"
+Port 9000 is busy:
+
+bash
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+5
+6
+7
+# See what's using it
+sudo lsof -i :9000
+
+# Kill it
+sudo fuser -k 9000/tcp
+
+# Or change the port in delete-handler.py
+Delete button doesn't work
+Check browser console (F12) for errors
+Hard refresh: Ctrl+Shift+R
+Verify delete-handler.py exists:
+bash
+
+Collapse
+Save
+Copy
+1
+ls -la ~/ark-library/delete-handler.py
+Videos Won't Play
+Check format: file video.mp4
+Install FFmpeg: sudo apt install ffmpeg
+Check permissions: chmod 644 videos/*.mp4
+Slow Performance
+Use Ubuntu home (~/ark-library/) instead of Windows path
+Close other browser tabs
+Clear browser cache
+Reduce number of files per folder
+🆕 Version History
+v38.0 (Current) - Clean Output Edition
+✅ Removed all ANSI color codes (no more 33m artifacts)
+✅ Clean text output ([OK], [URL], [TIP])
+✅ Works on any system without terminal issues
+✅ GitHub-ready installer
+v37.7 - Complete Edition
+✅ Added delete-handler.py (THE MISSING PIECE!)
+✅ System updates automatically
+✅ FFmpeg auto-installs
+v25.3 - Random Port Edition
+✅ Auto-generated random port (12345-31337)
+✅ ark-port command to show port
+✅ Enhanced security
+v25.0 - YouTube Thumbnails
+✅ Video thumbnails auto-generated
+✅ Click thumbnail to play (no more crashes)
+✅ Handles hundreds of files efficiently
+v24.4 - Delete Buttons
+✅ Delete with confirmation modal
+✅ Trash folder for recovery
+v23.7 - Personalization
+✅ Custom branding for Deven Cutting
+✅ Blue/cyan modern design
+✅ MIT License
+🤝 Contributing
+This project was built by Deven Cutting for personal use. Contributions and ideas are welcome!
+
+Fork the repository
+Create your feature branch: git checkout -b feature/MyFeature
+Commit your changes: git commit -m 'Add MyFeature'
+Push: git push origin feature/MyFeature
+Open a Pull Request
+📜 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+Copyright © 2026 Deven Cutting. All rights reserved.
+
+
+Collapse
+
+Run
+Save
+Copy
+1
+2
+3
+4
+5
+6
+7
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software...
+Free to use, modify, and distribute. 💙
+
+🙏 Credits
+Created by: Deven Cutting
+For: Organizing personal media collections and creative works
+Powered by: Python 3.12 🐍, FFmpeg 🎬, and the open-source community
+Theme: Blue/Cyan inspired by modern design
+License: MIT (yours forever!)
+📞 Support
+Issues: GitHub Issues
+Discussions: GitHub Discussions
+🌟 Show Your Support
+If this project helped you, please:
+
+⭐ Star this repository
+🍴 Fork and customize
+📢 Share with others who might need it
+💬 Tell Deven what you built!
+<div align="center">
+Made with 💙 for personal media curation
+
+💙 Deven Cutting's Media Library 💙
+
+Curating Knowledge, Media & Creative Works
+
+Version 38.0 | Clean Output Edition | MIT Licensed
+
+</div> ```
+📋 How To Add This To GitHub:
+Step 1: Create the file
+bash
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+# In your repo folder
+nano README.md
+# Paste everything above
+# Ctrl+O, Enter, Ctrl+X to save
+Step 2: Create LICENSE file
+bash
+
+Collapse
+Save
+Copy
+1
+2
+3
+# Create MIT license
+nano LICENSE
+# Paste the MIT license text (below)
+MIT License text to paste:
+
+
+Collapse
+
+Run
+Save
+Copy
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+MIT License
+
+Copyright (c) 2026 Deven Cutting
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+Step 3: Save the install.sh
+bash
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+# Save the v38.0 installer as install.sh
+nano install.sh
+# Paste the v38.0 installer
+# Save and exit
+Step 4: Make install.sh executable
+bash
+
+Collapse
+Save
+Copy
+1
+chmod +x install.sh
+Step 5: Commit and push
+bash
+
+Collapse
+Save
+Copy
+1
+2
+3
+git add .
+git commit -m "Release v38.0 - Clean Output Edition"
+git push
+🎯 Final Repo Structure:
+
+Collapse
+Save
+Copy
+1
+2
+3
+4
+5
+your-repo/
+├── README.md           # (the one we just created)
+├── LICENSE             # (MIT license)
+├── install.sh          # (the v38.0 installer)
+└── (optional) screenshots/ folder
+✨ Features Highlighted:
+The README emphasizes:
+
+✅ YouTube-style thumbnails (unique!)
+✅ Delete with safety (unique!)
+✅ Clean installer (v38.0 improvement!)
+✅ 4 media folders (videos, images, audio, music)
+✅ Auto thumbnail generation
+✅ MIT licensed (professional!)
+✅ WSL compatible
+Your GitHub repo is ready to impress! 💙✨
+
+When you're ready, you can add:
+
+📸 Screenshots (take some and add to screenshots/ folder)
+🎬 Demo GIF (record yourself using it!)
+📝 Wiki pages (advanced usage tips)
+Have fun sharing your creation with the world! 🕊️🎉
+
+
+Ask
+
+Explain
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div align="center">
 
 # 💙 Deven Cutting's Media Library
